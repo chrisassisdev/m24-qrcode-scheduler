@@ -1,0 +1,32 @@
+name: disable
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 3 * * *" # 00:30 BRT = 03:30 UTC
+
+jobs:
+  disable:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: Test endpoint with curl
+        env:
+          BASE: ${{ secrets.BASE }}
+          USERNAME: ${{ secrets.USERNAME }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+        run: |
+          curl -sS -o /dev/null -w "HTTP=%{http_code}\n" \
+            -u "$USERNAME:$PASSWORD" \
+            -H "Content-Type: application/json" \
+            -X POST "$BASE/api/qr/toggle" \
+            -d '{"enable":false}'
+      - name: Run python disable_qr_0030.py
+        env:
+          BASE: ${{ secrets.BASE }}
+          USERNAME: ${{ secrets.USERNAME }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+        run: python disable_qr_0030.py
