@@ -24,12 +24,8 @@ def toggle_qr(enable: bool) -> None:
     if not base_url or not username or not password:
         raise ValueError("Faltam variáveis: BASE, USERNAME, PASSWORD")
 
-    # Se BASE já vier com /api, evita duplicar /api
-    if base_url.endswith("/api"):
-        url = f"{base_url}/qr/toggle"
-    else:
-        url = f"{base_url}/api/qr/toggle"
-
+    # Ajuste: tente sem /api primeiro
+    url = f"{base_url}/qr/toggle"  # Remova /api se não existir
     print("DEBUG url =", url)
 
     r = requests.post(
