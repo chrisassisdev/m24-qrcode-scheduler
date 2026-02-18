@@ -1,2 +1,4 @@
 from toggle_qr import toggle_qr
-toggle_qr(enable=False)
+
+if __name__ == "__main__":
+    toggle_qr(enable=False)
