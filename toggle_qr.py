@@ -1,43 +1,31 @@
+# toggle_qr_debug.py
 import os
-from urllib.parse import urlparse
+import sys
 
-import requests
+def _require_env(name: str) -> str:
+    value = os.getenv(name)
+    if not value:
+        raise RuntimeError(f"Missing required env var: {name}")
+    return value
 
+def toggle_qr_debug() -> None:
+    """
+    Função de debug para verificar se os secrets estão sendo lidos.
+    Imprime informações parciais para não expor credenciais.
+    """
+    base = _require_env("BASE")
+    username = _require_env("USERNAME")
+    password = _require_env("PASSWORD")
 
-def toggle_qr(enable: bool) -> None:
-    base_url = os.getenv("BASE", "").strip().rstrip("/")
-    username = os.getenv("USERNAME", "").strip()
-    password = os.getenv("PASSWORD", "").strip()
+    print(f"DEBUG: BASE (início): {base[:10]}...")  # Imprime só o início
+    print(f"DEBUG: USERNAME: {username}")
+    print(f"DEBUG: PASSWORD (tamanho): {len(password)}")  # Imprime só o tamanho
 
-    # Debug seguro (não vaza credenciais)
-    if base_url:
-        p = urlparse(base_url)
-        print("DEBUG base_host =", p.netloc)
-        print("DEBUG base_path =", p.path)
-    else:
-        print("DEBUG base_host = <EMPTY>")
-        print("DEBUG base_path = <EMPTY>")
+    # Para a execução com um erro intencional para não chamar a API real
+    raise RuntimeError("DEBUG STOP - Secrets test successful, preventing API call.")
 
-    print("DEBUG has_USERNAME =", bool(username))
-    print("DEBUG has_PASSWORD =", bool(password))
+def main() -> None:
+    toggle_qr_debug()
 
-    if not base_url or not username or not password:
-        raise ValueError("Faltam variáveis: BASE, USERNAME, PASSWORD")
-
-    url = f"{base_url}/api/qr/toggle"
-    print("DEBUG url =", url)
-
-    r = requests.post(
-        url,
-        json={"enable": enable},
-        auth=(username, password),
-        timeout=30,
-    )
-
-    print("DEBUG status =", r.status_code)
-
-    if r.status_code >= 400:
-        body = (r.text or "").strip()
-        print("DEBUG response_body_first_200 =", body[:200])
-
-    r.raise_for_status()
+if __name__ == "__main__":
+    main()
