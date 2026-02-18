@@ -2,8 +2,7 @@ name: Enable QR Code (07:00 BRT)
 
 on:
   schedule:
-    # 07:00 BRT (UTC-3) = 10:00 UTC
-    - cron: "0 10 * * *"
+    - cron: "0 10 * * *"  # 07:00 BRT = 10:00 UTC
   workflow_dispatch:
 
 jobs:
