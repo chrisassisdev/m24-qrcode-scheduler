@@ -19,17 +19,23 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install dependencies
-        run: pip install --upgrade pip requests
+      - name: Install system packages (curl)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl
 
-      # (Opcional, recomendado) Teste rápido do endpoint com curl
-      - name: Test endpoint with curl
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Network test (curl) - non blocking
         env:
           BASE: ${{ secrets.BASE }}
           USERNAME: ${{ secrets.USERNAME }}
           PASSWORD: ${{ secrets.PASSWORD }}
         run: |
-          echo "DEBUG BASE (masked host/path)=$(echo "$BASE" | sed -E 's#(https?://)[^/]+#\1***#')"
+          echo "DEBUG BASE=$BASE"
           curl -sS -o /dev/null -w "HTTP=%{http_code}\n" \
             -u "$USERNAME:$PASSWORD" \
             -H "Content-Type: application/json" \
