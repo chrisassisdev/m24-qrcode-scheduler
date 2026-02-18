@@ -24,8 +24,7 @@ def toggle_qr(enable: bool) -> None:
     if not base_url or not username or not password:
         raise ValueError("Faltam variáveis: BASE, USERNAME, PASSWORD")
 
-    # Ajuste: tente sem /api (baseado no erro 404)
-    url = f"{base_url}/qr/toggle"  # Remova /api se não existir
+    url = f"{base_url}/api/qr/toggle"
     print("DEBUG url =", url)
 
     r = requests.post(
@@ -37,7 +36,6 @@ def toggle_qr(enable: bool) -> None:
 
     print("DEBUG status =", r.status_code)
 
-    # Debug do corpo em caso de erro (limitado)
     if r.status_code >= 400:
         body = (r.text or "").strip()
         print("DEBUG response_body_first_200 =", body[:200])
