@@ -1,29 +1,41 @@
-name: disable
+name: disable-qr-0030
+
 on:
   workflow_dispatch:
   schedule:
-    - cron: "30 3 * * *" # 00:30 BRT = 03:30 UTC
+    # 00:30 BRT (UTC-3) = 03:30 UTC
+    - cron: "30 3 * * *"
 
 jobs:
   disable:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install requests
+
+      - name: Install dependencies
+        run: pip install --upgrade pip requests
+
+      # (Opcional, recomendado) Teste rápido do endpoint com curl
       - name: Test endpoint with curl
         env:
           BASE: ${{ secrets.BASE }}
           USERNAME: ${{ secrets.USERNAME }}
           PASSWORD: ${{ secrets.PASSWORD }}
         run: |
+          echo "DEBUG BASE (masked host/path)=$(echo "$BASE" | sed -E 's#(https?://)[^/]+#\1***#')"
           curl -sS -o /dev/null -w "HTTP=%{http_code}\n" \
             -u "$USERNAME:$PASSWORD" \
             -H "Content-Type: application/json" \
             -X POST "$BASE/api/qr/toggle" \
             -d '{"enable":false}'
+
       - name: Run python disable_qr_0030.py
         env:
           BASE: ${{ secrets.BASE }}
