@@ -2,8 +2,8 @@ name: Disable QR Code (00:30 BRT)
 
 on:
   schedule:
-    # 00:30 BRT (UTC-3) = 03:30 UTC
-    - cron: "30 3 * * *"
+    # 23:50 BRT (UTC-3) = 02:50 UTC
+    - cron: "50 2 * * *"
   workflow_dispatch:
 
 jobs:
