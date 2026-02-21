@@ -1,9 +1,13 @@
-name: Enable QR Code (window only)
+name: Enable QR Code (07:00 BRT / 10:00 UTC)
 
 on:
   schedule:
     - cron: "*/5 * * * *"
   workflow_dispatch:
+
+concurrency:
+  group: qr-toggle
+  cancel-in-progress: false
 
 jobs:
   enable:
@@ -24,30 +28,29 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Compute time window (BRT)
+      - name: Compute time window (UTC)
         id: meta
         run: |
-          sudo timedatectl set-timezone America/Sao_Paulo
+          NOW_HM=$(date -u +%H:%M)
 
-          NOW_HM=$(date +%H:%M)
-          TODAY=$(date +%F)
+          echo "UTC now: $(date -u)"
+          echo "NOW_HM: $NOW_HM"
 
-          # Janela para 07:00 BRT (ajuste se quiser)
-          # Aceita: 06:59, 07:00, 07:01, 07:02
-          if [[ "$NOW_HM" == "06:59" || "$NOW_HM" == "07:00" || "$NOW_HM" == "07:01" || "$NOW_HM" == "07:02" ]]; then
+          # TRAVA: não roda enable se estiver na janela do disable (02:49-02:52 UTC)
+          if [[ "$NOW_HM" == "02:49" || "$NOW_HM" == "02:50" || "$NOW_HM" == "02:51" || "$NOW_HM" == "02:52" ]]; then
+            echo "should_run=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Janela do ENABLE: 09:59-10:02 UTC (06:59-07:02 BRT)
+          if [[ "$NOW_HM" == "09:59" || "$NOW_HM" == "10:00" || "$NOW_HM" == "10:01" || "$NOW_HM" == "10:02" ]]; then
             echo "should_run=true" >> $GITHUB_OUTPUT
           else
             echo "should_run=false" >> $GITHUB_OUTPUT
           fi
 
-          echo "now_hm=$NOW_HM" >> $GITHUB_OUTPUT
-          echo "today=$TODAY" >> $GITHUB_OUTPUT
-
-          echo "BRT now: $(date)"
-          echo "should_run: $(cat $GITHUB_OUTPUT | grep should_run || true)"
-
       - name: Enable QR Code
-        if: steps.meta.outputs.should_run == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.meta.outputs.should_run == 'true'
         env:
           BASE: ${{ secrets.BASE }}
           USERNAME: ${{ secrets.USERNAME }}
