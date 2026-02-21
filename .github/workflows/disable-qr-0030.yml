@@ -31,7 +31,7 @@ jobs:
 
           # Alvo: 00:19 UTC
           # Janela: 00:18, 00:19, 00:20
-          if [[ "$NOW_HM" == "00:18" || "$NOW_HM" == "00:19" || "$NOW_HM" == "00:20" ]]; then
+          if [[ "$NOW_HM" == "00:25" || "$NOW_HM" == "00:26" || "$NOW_HM" == "00:27" ]]; then
             echo "should_run=true" >> $GITHUB_OUTPUT
           else
             echo "should_run=false" >> $GITHUB_OUTPUT
