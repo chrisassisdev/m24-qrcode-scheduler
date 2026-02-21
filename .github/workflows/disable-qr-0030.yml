@@ -1,9 +1,13 @@
-name: Disable QR Code (UTC 00:19 window)
+name: Disable QR Code (23:50 BRT / 02:50 UTC)
 
 on:
   schedule:
-    - cron: "* * * * *"
+    - cron: "*/5 * * * *"
   workflow_dispatch:
+
+concurrency:
+  group: qr-toggle
+  cancel-in-progress: false
 
 jobs:
   disable:
@@ -29,17 +33,21 @@ jobs:
         run: |
           NOW_HM=$(date -u +%H:%M)
 
-          # Alvo: 00:19 UTC
-          # Janela: 00:18, 00:19, 00:20
-          if [[ "$NOW_HM" == "00:25" || "$NOW_HM" == "00:26" || "$NOW_HM" == "00:27" ]]; then
+          echo "UTC now: $(date -u)"
+          echo "NOW_HM: $NOW_HM"
+
+          # TRAVA: não roda disable se estiver na janela do enable (09:59-10:02 UTC)
+          if [[ "$NOW_HM" == "09:59" || "$NOW_HM" == "10:00" || "$NOW_HM" == "10:01" || "$NOW_HM" == "10:02" ]]; then
+            echo "should_run=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Janela do DISABLE: 02:49-02:52 UTC (23:49-23:52 BRT)
+          if [[ "$NOW_HM" == "02:49" || "$NOW_HM" == "02:50" || "$NOW_HM" == "02:51" || "$NOW_HM" == "02:52" ]]; then
             echo "should_run=true" >> $GITHUB_OUTPUT
           else
             echo "should_run=false" >> $GITHUB_OUTPUT
           fi
-
-          echo "now_hm=$NOW_HM" >> $GITHUB_OUTPUT
-          echo "UTC now: $(date -u)"
-          echo "should_run: $(cat $GITHUB_OUTPUT | grep should_run || true)"
 
       - name: Disable QR Code
         if: github.event_name == 'workflow_dispatch' || steps.meta.outputs.should_run == 'true'
