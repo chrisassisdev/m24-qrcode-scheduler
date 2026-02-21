@@ -1,8 +1,8 @@
-name: Disable QR Code (UTC window)
+name: Disable QR Code (UTC 00:19 window)
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "* * * * *"
   workflow_dispatch:
 
 jobs:
@@ -28,24 +28,21 @@ jobs:
         id: meta
         run: |
           NOW_HM=$(date -u +%H:%M)
-          TODAY=$(date -u +%F)
 
-          # Janela para 02:50 UTC (23:50 BRT)
-          # Aceita: 02:49, 02:50, 02:51, 02:52
-          if [[ "$NOW_HM" == "00:10" || "$NOW_HM" == "00:11" || "$NOW_HM" == "00:12" || "$NOW_HM" == "00:13" ]]; then
+          # Alvo: 00:19 UTC
+          # Janela: 00:18, 00:19, 00:20
+          if [[ "$NOW_HM" == "00:18" || "$NOW_HM" == "00:19" || "$NOW_HM" == "00:20" ]]; then
             echo "should_run=true" >> $GITHUB_OUTPUT
           else
             echo "should_run=false" >> $GITHUB_OUTPUT
           fi
 
           echo "now_hm=$NOW_HM" >> $GITHUB_OUTPUT
-          echo "today=$TODAY" >> $GITHUB_OUTPUT
-
           echo "UTC now: $(date -u)"
           echo "should_run: $(cat $GITHUB_OUTPUT | grep should_run || true)"
 
       - name: Disable QR Code
-        if: steps.meta.outputs.should_run == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.meta.outputs.should_run == 'true'
         env:
           BASE: ${{ secrets.BASE }}
           USERNAME: ${{ secrets.USERNAME }}
